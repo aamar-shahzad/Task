@@ -2,6 +2,7 @@
 backend/myenv/
 backend/venv/
 backend/.venv/
+backend/data/*
 
 # Python cache files
 __pycache__/

@@ -1,9 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import './App.css';
 import ChatMessage from './components/ChatMessage';
 import ChatInput from './components/ChatInput';
 import Sidebar from './components/Sidebar';
-import { v4 as uuidv4 } from 'uuid'; // Import UUID library
+import { v4 as uuidv4 } from 'uuid';
 
 function App() {
   const [messages, setMessages] = useState([]);
@@ -24,7 +23,6 @@ function App() {
   useEffect(() => {
     if (messages.length > 0 && sessionId) {
       // No need to explicitly save - backend will handle this with each message
-      // We just need to update our local state
     }
     scrollToBottom();
   }, [messages]);
@@ -217,77 +215,81 @@ function App() {
   };
 
   return (
-    <div className="app-container">
-      <div className="main-content">
+    <div className="flex h-screen bg-gray-100">
+      <div className="flex flex-1 overflow-hidden">
         {showSidebar && (
-          <Sidebar 
-            onNewChat={clearChat} 
-            onLoadChat={loadChat}
-            currentSessionId={sessionId}
-            chatHistory={chatHistory}
-            isLoading={isLoadingHistory}
-          />
+          <div className={`w-64 bg-white shadow-md transition-all duration-300 ${isToggling ? 'animate-slide' : ''}`}>
+            <Sidebar 
+              onNewChat={clearChat} 
+              onLoadChat={loadChat}
+              currentSessionId={sessionId}
+              chatHistory={chatHistory}
+              isLoading={isLoadingHistory}
+            />
+          </div>
         )}
         
-        <div className="chat-container">
-        <button 
-          className={`toggle-sidebar-btn ${isToggling ? 'toggling' : ''}`} 
-          onClick={toggleSidebar}
-          aria-label={showSidebar ? "Hide sidebar" : "Show sidebar"}
-        >
-          {showSidebar ? (
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M15 6L9 12L15 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          ) : (
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M9 6L15 12L9 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          )}
-        </button>
+        <div className="flex flex-col flex-1 overflow-hidden">
+          <button 
+            className={`absolute top-4 ${showSidebar ? 'left-64' : 'left-4'} z-10 p-2 bg-white rounded-full shadow-md transition-all duration-300 hover:bg-gray-100`}
+            onClick={toggleSidebar}
+            aria-label={showSidebar ? "Hide sidebar" : "Show sidebar"}
+          >
+            {showSidebar ? (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15 6L9 12L15 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            ) : (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 6L15 12L9 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            )}
+          </button>
           
-          <div className="messages-container">
+          <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
             {isLoadingHistory ? (
-              <div className="loading-history">Loading chats...</div>
+              <div className="flex items-center justify-center h-full text-gray-500">Loading chats...</div>
             ) : messages.length === 0 ? (
-              <div className="welcome-message">
-                <h2>Employee Data Assistant</h2>
-                <p>Ask questions about employee data or any general topic</p>
-                <ul>
-                  <li onClick={() => handleQuickQuestion("What is the median salary in the IT department?")}>
-                    What is the median salary in the IT department?
-                  </li>
-                  <li onClick={() => handleQuickQuestion("Which department has the highest-paid employee?")}>
-                    Which department has the highest-paid employee?
-                  </li>
-                  <li onClick={() => handleQuickQuestion("How many employees are in the Finance department?")}>
-                    How many employees are in the Finance department?
-                  </li>
-                  <li onClick={() => handleQuickQuestion("What is RAG in the context of AI?")}>
-                    What is RAG in the context of AI?
-                  </li>
+              <div className="flex flex-col items-center justify-center h-full text-center px-4">
+                <h2 className="text-2xl font-bold mb-4 text-gray-800">Employee Data Assistant</h2>
+                <p className="text-gray-600 mb-6">Ask questions about employee data or any general topic</p>
+                <ul className="space-y-3 w-full max-w-md">
+                  {[
+                    "What is the median salary in the IT department?",
+                    "Which department has the highest-paid employee?",
+                    "How many employees are in the Finance department?",
+                    "What is RAG in the context of AI?"
+                  ].map((question, idx) => (
+                    <li 
+                      key={idx} 
+                      onClick={() => handleQuickQuestion(question)}
+                      className="p-3 bg-white rounded-lg shadow-sm border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors"
+                    >
+                      {question}
+                    </li>
+                  ))}
                 </ul>
               </div>
             ) : (
-              <div className="messages-list">
+              <div className="space-y-4">
                 {messages.map((message, index) => (
                   <ChatMessage key={index} message={message} />
                 ))}
                 {loading && (
-                  <div className="loading-indicator">
-                    <div className="loading-bubble"></div>
-                    <div className="loading-bubble"></div>
-                    <div className="loading-bubble"></div>
+                  <div className="flex space-x-2 p-4 items-center">
+                    <div className="w-3 h-3 bg-gray-300 rounded-full animate-bounce"></div>
+                    <div className="w-3 h-3 bg-gray-300 rounded-full animate-bounce delay-100"></div>
+                    <div className="w-3 h-3 bg-gray-300 rounded-full animate-bounce delay-200"></div>
                   </div>
                 )}
+                <div ref={messagesEndRef} />
               </div>
             )}
-            <div ref={messagesEndRef} />
           </div>
           
-          <div className="input-footer">
+          <div className="border-t border-gray-200 bg-white p-4">
             <ChatInput onSendMessage={handleSendMessage} disabled={loading} />
-            <div className="input-footer-text">
+            <div className="text-xs text-gray-500 mt-2 text-center">
               Our AI assistant provides information based on employee data. Use responsibly.
             </div>
           </div>
