@@ -1,8 +1,8 @@
-# Task Manager Application
+# Task Manager Application (RAG)
 
 A brief description of what this project does and who it's for.
 
-This project is a Task Manager Pro with a frontend built in ReactJS and a backend using Python with FastAPI. It uses Gemini as the language model and does not utilize any vector databases. The backend has endpoints to support the frontend and uses fake employee data from an Excel sheet to answer user questions. The system handles two categories of questions: general-purpose questions and specific-purpose questions, such as performing arithmetic operations on the data source for correct answers.
+This project is a Task Manager with a frontend built in ReactJS and a backend using Python with FastAPI. It uses Gemini as the language model and does not utilize any vector databases. The backend has endpoints to support the frontend and uses fake employee data from an Excel sheet to answer user questions. The system handles two categories of questions: general-purpose questions and specific-purpose questions, such as performing arithmetic operations on the data source for correct answers.
 
 ## Installation
 
