@@ -15,7 +15,7 @@ function Sidebar({ onNewChat, onLoadChat, currentSessionId, chatHistory }) {
     }
     return `Chat ${new Date(chat.createdAt).toLocaleDateString()}`;
   };
-  console.log(chatHistory, "chatHistory");
+ 
 
   return (
     <div className="flex flex-col h-full bg-gray-50 border-r border-gray-200">

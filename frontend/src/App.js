@@ -213,6 +213,23 @@ function App() {
       setIsToggling(false);
     }, 300);
   };
+const getChatTitle = (chat) => {
+  if (chat.messages && chat.messages.length > 0) {
+    const firstUserMessage = chat.messages.find(msg => msg.sender === 'user');
+    if (firstUserMessage) {
+      return firstUserMessage.text.length > 30 
+        ? firstUserMessage.text.substring(0, 30) + '...' 
+        : firstUserMessage.text;
+    }
+
+  }
+  return `Chat ${new Date(chat.createdAt).toLocaleDateString()}`;
+
+};
+
+console.log(getChatTitle(chatHistory), "chatHistory");
+
+
 
   return (
     <div className="flex h-screen bg-gray-100">
