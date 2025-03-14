@@ -51,12 +51,7 @@ function ChatMessage({ message }) {
               )}
             </div>
           </div>
-          
-          {sender === 'assistant' && !isError && (
-            <div className="px-4 py-2 bg-gray-50 border-t border-gray-100 flex justify-end space-x-2">
-              {/* Action buttons can go here */}
-            </div>
-          )}
+       
         </div>
       </div>
     </div>

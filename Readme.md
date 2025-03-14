@@ -1,4 +1,4 @@
-# Web-Based Chat Interface for RAG-Enhanced Q&A System
+# Task Manager Application
 
 A brief description of what this project does and who it's for.
 
@@ -17,6 +17,40 @@ git clone https://github.com/aamar-shahzad/Task.git
 # Navigate to the project directory
 cd Task
 ```
+
+## Running the Application (Using Docker Compose)
+
+Ensure you have Docker and Docker Compose installed on your system.
+
+1. **Check Docker Installation**
+
+```bash
+docker --version
+docker-compose --version
+```
+
+2. **Build and Start the Application**
+
+```bash
+# Build and start the frontend and backend services
+docker-compose up --build
+```
+
+3. **Access the Application**
+
+- **Frontend**: [http://localhost:3000](http://localhost:3000)
+- **Backend API Docs (Swagger UI)**: [http://localhost:3001/docs](http://localhost:3001/docs)
+
+4. **Stop the Application**
+
+```bash
+# Stop running containers
+docker-compose down
+```
+
+## Running the Application (Without Docker)
+
+If you prefer to run the application without Docker, follow the steps below.
 
 ### Frontend
 
@@ -49,26 +83,57 @@ source venv/bin/activate
 # Install dependencies
 pip install -r requirements.txt
 
+# Set environment variables
+cp .env.example .env
+
+# Configure the .env file with your specific settings
+
 # Start the backend server
-uvicorn app.main:app --port 3001
+uvicorn app.main:app --host 0.0.0.0 --port 3001
 ```
 
-## Usage
+## Deployment
 
-Instructions on how to use the project.
+To deploy the application using Docker, follow these steps:
 
-### Frontend
+1. **Build Docker Images**
 
 ```bash
-# Run the frontend
-npm run start
+# From the project root directory
+docker-compose build
 ```
 
-### Backend
+2. **Run the Containers in Detached Mode**
 
 ```bash
-# Run the backend
-uvicorn app.main:app --port 3001
+# Start containers in the background
+docker-compose up -d
+```
+
+3. **Check Logs (Optional)**
+
+```bash
+# View logs for backend or frontend
+docker-compose logs backend
+docker-compose logs frontend
+```
+
+4. **Stop and Remove Containers**
+
+```bash
+# Stop and remove containers
+docker-compose down
+```
+
+## Environment Variables
+
+Ensure that all necessary environment variables are configured in the `docker-compose.yml` file or `.env` file. Modify as needed.
+
+Example `.env` file in the `backend` directory:
+
+```env
+PORT=3001
+GEMINI_API_KEY=your-api-key
 ```
 
 ## License

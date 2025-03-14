@@ -13,19 +13,18 @@ function App() {
   const messagesEndRef = useRef(null);
   const [isToggling, setIsToggling] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+  const [isFirstVisit, setIsFirstVisit] = useState(false);
 
-  // Initialize session and load chat history on component mount
   useEffect(() => {
     initializeSession();
   }, []);
 
-  // Save messages to history when they change
   useEffect(() => {
     if (messages.length > 0 && sessionId) {
-      // No need to explicitly save - backend will handle this with each message
+      localStorage.setItem(`chat_${sessionId}`, JSON.stringify(messages));
     }
     scrollToBottom();
-  }, [messages]);
+  }, [messages, sessionId]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -34,31 +33,42 @@ function App() {
   const initializeSession = async () => {
     setIsLoadingHistory(true);
     try {
-      // Get a session ID from the backend or create a new one
-      const response = await fetch('http://localhost:3001/sessions/init', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const savedSessionId = localStorage.getItem('currentSessionId');
+      const savedMessages = savedSessionId ? JSON.parse(localStorage.getItem(`chat_${savedSessionId}`) || '[]') : [];
+
+      if (savedSessionId) {
+        setSessionId(savedSessionId);
+        setMessages(savedMessages);
+        setIsFirstVisit(false);
+      } else {
+        setIsFirstVisit(true);
+        const response = await fetch('http://localhost:3001/sessions/init', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to initialize session');
         }
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to initialize session');
+
+        const data = await response.json();
+        setSessionId(data.sessionId);
+        localStorage.setItem('currentSessionId', data.sessionId);
       }
-      
-      const data = await response.json();
-      setSessionId(data.sessionId);
-      
-      // Now load chat history
+
       await loadChatHistory();
     } catch (error) {
       console.error('Error initializing session:', error);
-      // Fallback to local UUID if server fails
-      setSessionId(uuidv4());
+      const newSessionId = uuidv4();
+      setSessionId(newSessionId);
+      localStorage.setItem('currentSessionId', newSessionId);
     } finally {
       setIsLoadingHistory(false);
     }
   };
+
 
   const loadChatHistory = async () => {
     try {
@@ -68,16 +78,40 @@ function App() {
           'Content-Type': 'application/json',
         }
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to load chat history');
       }
-      
+
       const data = await response.json();
-      setChatHistory(data.history || []);
+      const mergedHistory = [...(data.history || [])];
+      setChatHistory(mergedHistory);
+
+      if (sessionId && !mergedHistory.some(chat => chat.sessionId === sessionId)) {
+        const localMessages = JSON.parse(localStorage.getItem(`chat_${sessionId}`) || '[]');
+        if (localMessages.length > 0) {
+          const localSession = {
+            sessionId,
+            messages: localMessages,
+            createdAt: localMessages[0]?.timestamp || new Date().toISOString()
+          };
+          setChatHistory(prev => [...prev, localSession]);
+        }
+      }
     } catch (error) {
       console.error('Error loading chat history:', error);
-      setChatHistory([]);
+      const localSessions = Object.keys(localStorage)
+        .filter(key => key.startsWith('chat_'))
+        .map(key => {
+          const sessionId = key.replace('chat_', '');
+          const messages = JSON.parse(localStorage.getItem(key) || '[]');
+          return {
+            sessionId,
+            messages,
+            createdAt: messages[0]?.timestamp || new Date().toISOString()
+          };
+        });
+      setChatHistory(localSessions);
     }
   };
 
@@ -121,10 +155,15 @@ function App() {
         source: data.source || 'unknown'
       };
       
-      setMessages(prevMessages => [...prevMessages, assistantMessage]);
+      const updatedMessages = [...messages, userMessage, assistantMessage];
+      setMessages(updatedMessages);
       
-      // Optionally refresh history if this is a new chat
-      if (messages.length <= 1) {
+      // Save to local storage
+      localStorage.setItem(`chat_${sessionId}`, JSON.stringify(updatedMessages));
+      
+      // If this is a new session that wasn't previously in history, refresh history
+      if (isFirstVisit && messages.length <= 1) {
+        setIsFirstVisit(false);
         await loadChatHistory();
       }
     } catch (error) {
@@ -159,22 +198,42 @@ function App() {
       }
       
       const data = await response.json();
+      
+      // Update local storage with new session ID
+      localStorage.setItem('currentSessionId', data.sessionId);
+      localStorage.removeItem(`chat_${sessionId}`); // Clean up old session data
+      
       setSessionId(data.sessionId);
       setMessages([]);
+      setIsFirstVisit(true);
       
       // Refresh history
       await loadChatHistory();
     } catch (error) {
       console.error('Error creating new chat:', error);
       // Fallback to just clearing messages
+      const newSessionId = uuidv4();
+      localStorage.setItem('currentSessionId', newSessionId);
+      localStorage.removeItem(`chat_${sessionId}`); // Clean up old session data
+      
+      setSessionId(newSessionId);
       setMessages([]);
-      setSessionId(uuidv4());
     }
   };
 
   const loadChat = async (id) => {
     try {
-      // Load a specific chat from the backend
+      // First check if we have this chat in local storage
+      const localMessages = JSON.parse(localStorage.getItem(`chat_${id}`) || '[]');
+      
+      if (localMessages.length > 0) {
+        setSessionId(id);
+        setMessages(localMessages);
+        localStorage.setItem('currentSessionId', id);
+        return;
+      }
+      
+      // If not in local storage, try loading from the backend
       const response = await fetch(`http://localhost:3001/sessions/${id}`, {
         method: 'GET',
         headers: {
@@ -189,13 +248,19 @@ function App() {
       const data = await response.json();
       setSessionId(id);
       setMessages(data.messages || []);
+      
+      // Save to local storage
+      localStorage.setItem('currentSessionId', id);
+      localStorage.setItem(`chat_${id}`, JSON.stringify(data.messages || []));
     } catch (error) {
       console.error('Error loading chat:', error);
-      // Try to find it in local state as fallback
+      // Try to find it in local history as fallback
       const chat = chatHistory.find(chat => chat.sessionId === id);
       if (chat && chat.messages) {
         setSessionId(id);
         setMessages(chat.messages);
+        localStorage.setItem('currentSessionId', id);
+        localStorage.setItem(`chat_${id}`, JSON.stringify(chat.messages));
       }
     }
   };
@@ -213,23 +278,18 @@ function App() {
       setIsToggling(false);
     }, 300);
   };
-const getChatTitle = (chat) => {
-  if (chat.messages && chat.messages.length > 0) {
-    const firstUserMessage = chat.messages.find(msg => msg.sender === 'user');
-    if (firstUserMessage) {
-      return firstUserMessage.text.length > 30 
-        ? firstUserMessage.text.substring(0, 30) + '...' 
-        : firstUserMessage.text;
+
+  const getChatTitle = (chat) => {
+    if (chat.messages && chat.messages.length > 0) {
+      const firstUserMessage = chat.messages.find(msg => msg.sender === 'user');
+      if (firstUserMessage) {
+        return firstUserMessage.text.length > 30 
+          ? firstUserMessage.text.substring(0, 30) + '...' 
+          : firstUserMessage.text;
+      }
     }
-
-  }
-  return `Chat ${new Date(chat.createdAt).toLocaleDateString()}`;
-
-};
-
-console.log(getChatTitle(chatHistory), "chatHistory");
-
-
+    return `Chat ${new Date(chat.createdAt).toLocaleDateString()}`;
+  };
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -242,6 +302,7 @@ console.log(getChatTitle(chatHistory), "chatHistory");
               currentSessionId={sessionId}
               chatHistory={chatHistory}
               isLoading={isLoadingHistory}
+              getChatTitle={getChatTitle}
             />
           </div>
         )}

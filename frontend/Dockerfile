@@ -1,13 +1,33 @@
-FROM node:latest 
+# Build stage
+FROM node:18 AS build
 
+# Set working directory
 WORKDIR /app
 
-COPY package*.json ./
+# Copy package files for dependency installation
+COPY package.json package-lock.json* ./
 
-RUN npm install
+# Install dependencies
+RUN npm ci
 
+# Copy all frontend files
 COPY . .
 
-EXPOSE 3000
+# Build the React application
+RUN npm run build
 
-CMD ["npm", "start"]
+# Production stage
+FROM nginx:1.24
+
+# Copy built React app to Nginx serve directory
+COPY --from=build /app/build /usr/share/nginx/html
+
+# Add nginx configuration to properly handle React router
+RUN rm /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d/
+
+# Expose port 80
+EXPOSE 80
+
+# Start Nginx server
+CMD ["nginx", "-g", "daemon off;"]
