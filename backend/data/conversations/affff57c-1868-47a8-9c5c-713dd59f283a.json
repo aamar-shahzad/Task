@@ -1,0 +1,27 @@
+{
+  "messages": [
+    {
+      "text": "What is the median salary in the IT department?",
+      "sender": "user",
+      "timestamp": "2025-03-13T23:15:55.000280",
+      "source": null,
+      "isError": null
+    },
+    {
+      "text": "The median salary in the IT department is $96,769.",
+      "sender": "assistant",
+      "timestamp": "2025-03-13T23:15:55.000313",
+      "source": "dataframe",
+      "isError": false
+    }
+  ],
+  "last_access": "2025-03-13T23:30:56.824339",
+  "context": {
+    "last_result": 96769.0
+  },
+  "metadata": {
+    "created_at": "2025-03-13T23:15:39.705056",
+    "title": "What is the median salary in the IT department?",
+    "tags": []
+  }
+}

@@ -1,0 +1,121 @@
+/* ChatMessage.css */
+.message-row {
+    display: flex;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .message-row.user {
+    background-color: #f7f7f8;
+  }
+  
+  .message-row.assistant {
+    background-color: white;
+  }
+  
+  .message-row.error {
+    background-color: rgba(255, 74, 74, 0.1);
+  }
+  
+  .message-container {
+    display: flex;
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 0 20px;
+  }
+  
+  .avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 2px;
+    margin-right: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  
+  .avatar.user {
+    background-color: #5436da;
+    color: white;
+  }
+  
+  .avatar.assistant {
+    background-color: #10a37f;
+    color: white;
+  }
+  
+  .avatar svg {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .message-content {
+    flex: 1;
+  }
+  
+  .message-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  
+  .message-sender {
+    font-weight: 600;
+    font-size: 16px;
+  }
+  
+  .message-timestamp {
+    font-size: 12px;
+    color: var(--light-text-color);
+  }
+  
+  .message-text {
+    font-size: 16px;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+  }
+  
+  .message-text p {
+    margin-bottom: 16px;
+  }
+  
+  .message-text p:last-child {
+    margin-bottom: 0;
+  }
+  
+  .message-source {
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--light-text-color);
+    padding: 4px 8px;
+    background-color: rgba(142, 142, 160, 0.1);
+    border-radius: 4px;
+    display: inline-block;
+  }
+  
+  .message-actions {
+    margin-top: 16px;
+    display: flex;
+    gap: 12px;
+  }
+  
+  .message-action-button {
+    background: none;
+    border: none;
+    color: var(--light-text-color);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+  }
+  
+  .message-action-button:hover {
+    background-color: rgba(142, 142, 160, 0.1);
+  }
+  
+  .message-action-button svg {
+    width: 16px;
+    height: 16px;
+  }
