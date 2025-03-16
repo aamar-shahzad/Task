@@ -44,6 +44,7 @@ function ChatInput({ onSendMessage, disabled }) {
         <div className="flex-shrink-0 pr-2">
           <button 
             type="submit" 
+            aria-label="Send"
             disabled={disabled || !inputText.trim()} 
             className={`p-2 rounded-full ${
               disabled || !inputText.trim() 

@@ -59,7 +59,29 @@ async def process_dataframe_query(question: str, conversation_manager=None):
         # Get the shape of the DataFrame
         df_shape = df.shape  # (rows, columns)
         
-        # First generate the code
+        # First, let's add a step to help the AI understand potential variations
+        mapping_prompt = f"""
+        User question: "{question}"
+        
+        DataFrame columns: {list(df.columns)}
+        
+        Task: Identify all potential column references in the user's question and map them to the EXACT column names in the DataFrame.
+        
+        Consider these variations:
+        1. Singular vs plural forms (e.g., "sale" → "Sales")
+        2. Case differences (e.g., "department" → "Department")
+        3. Synonyms or related terms (e.g., "workers" → "EmployeeID")
+        4. Misspellings or typos (e.g., "performence" → "Performance")
+        
+        Return a JSON object with mappings from user terms to actual column names.
+        Example: {{"sale": "Sales", "workers": "EmployeeID"}}
+        
+        Return only the JSON object, nothing else.
+        """
+        
+        column_mapping_response = await ai_service.generate_content(mapping_prompt)
+        
+        # Now generate the code with this mapping knowledge
         prompt = f"""
         DataFrame Analysis Task:
         
@@ -73,15 +95,20 @@ async def process_dataframe_query(question: str, conversation_manager=None):
         Previous context:
         {context_text}
         
-        Question to analyze: "{question}"
+        User question: "{question}"
+        
+        Column mapping analysis:
+        {column_mapping_response}
         
         Instructions:
         1. Return EXACTLY ONE pandas operation/statement using only the 'df' DataFrame
         2. Use only pandas built-in functions and methods
-        3. Do not reference any previous results or context variables
         4. Focus on answering the current question directly
         5. Handle potential NULL/NaN values appropriately
         6. If aggregating, use appropriate grouping
+        7. IMPORTANT: Make sure to use the EXACT column names from the DataFrame, not the user's variations
+        8. If the user refers to a column in singular form but the actual column is plural (or vice versa), use the correct column name
+        9. If the user refers to a column using a synonym or related term, map it to the correct actual column name
         
         Generate ONLY executable pandas code without any explanations or comments.
         """
@@ -113,6 +140,8 @@ async def process_dataframe_query(question: str, conversation_manager=None):
         except Exception as exec_error:
             logger.error(f"Error executing generated code: {str(exec_error)}")
             return None, f"I couldn't process that query correctly. The specific error was: {str(exec_error)}", None
+        
+        # Rest of the function remains the same...
         
         # Convert result to appropriate format
         if isinstance(result, pd.DataFrame):

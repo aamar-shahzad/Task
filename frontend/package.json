@@ -3,9 +3,6 @@
     "version": "0.1.0",
     "private": true,
     "dependencies": {
-        "@testing-library/jest-dom": "^5.17.0",
-        "@testing-library/react": "^13.4.0",
-        "@testing-library/user-event": "^13.5.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "react-markdown": "^10.1.0",
@@ -15,9 +12,27 @@
     "scripts": {
         "start": "react-scripts start",
         "build": "react-scripts build",
-        "test": "react-scripts test",
+        "test": "react-scripts test --coverage",
         "eject": "react-scripts eject"
     },
+    "jest": {
+  "collectCoverageFrom": [
+    "src/**/*.{js,jsx}",
+    "!src/index.js",
+    "!src/reportWebVitals.js",
+    "!src/setupTests.js"
+  ],
+  "transformIgnorePatterns": [
+    "/node_modules/(?!(react-markdown|devlop|micromark|unist|mdast|vfile|unified|bail|is-plain-obj|zwitch))"
+  ],
+  "transform": {
+    "^.+\\.jsx?$": "babel-jest"
+  },
+  "moduleNameMapper": {
+    "^react-markdown$": "<rootDir>/__mocks__/react-markdown.jsx"
+  }
+},
+   
     "eslintConfig": {
         "extends": [
             "react-app",
@@ -37,8 +52,15 @@
         ]
     },
     "devDependencies": {
+        "@babel/core": "^7.26.10",
+        "@babel/preset-env": "^7.26.9",
+        "@babel/preset-react": "^7.26.3",
         "@tailwindcss/typography": "^0.5.16",
+        "@testing-library/jest-dom": "^6.6.3",
+        "@testing-library/react": "^14.0.0",
+        "@testing-library/user-event": "^14.5.0",
         "autoprefixer": "^10.4.21",
+        "babel-jest": "^29.7.0",
         "postcss": "^8.5.3",
         "tailwindcss": "^3.3.0"
     }

@@ -26,14 +26,15 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Add CORS middleware
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:3001").split(","),
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],  
     allow_headers=["*"],
 )
+
 
 # Include API routes
 app.include_router(router)

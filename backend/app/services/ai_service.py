@@ -12,11 +12,13 @@ class AiModelService:
     
     def __init__(self, model_name='gemini-1.5-flash'):
         self.model_name = model_name
+        print("Using model",model_name)
         
     async def generate_content(self, prompt):
         """Async wrapper around the synchronous Gemini API"""
         loop = asyncio.get_event_loop()
         model = genai.GenerativeModel(self.model_name)
+        
         
         try:
             # Run in a thread pool to not block the event loop
@@ -29,14 +31,13 @@ class AiModelService:
             raise
 
 async def classify_query_type(question: str, conversation_manager=None):
-    """Determine if the query is a data analysis question or a general conversation question"""
     try:
         df = get_dataframe()
         ai_service = AiModelService()
         
         context_text = ""
         if conversation_manager:
-            context_text = conversation_manager.get_conversation_text(limit=3)  # Limited context for efficiency
+            context_text = conversation_manager.get_conversation_text(limit=3)
         
         # DataFrame info
         df_columns = list(df.columns)
@@ -55,18 +56,30 @@ async def classify_query_type(question: str, conversation_manager=None):
         User query: "{question}"
         
         Classification instructions:
-        1. DATA_ANALYSIS: Only classify as this if the query explicitly requests information from the DataFrame or is clearly a follow-up to a previous data-related question
+        1. DATA_ANALYSIS: Classify as this if:
+           - The query explicitly requests information from the DataFrame
+           - The query references column names or conceptually similar terms
+           - The query is clearly a follow-up to a previous data-related question
+           - The query contains synonyms, misspellings, or grammatical variations of column names
         2. GENERAL_CONVERSATION: Classify as this if:
            - The query is a general knowledge question (e.g., "What is RAG in AI?")
            - The query is a greeting or casual conversation
            - The query is asking about something unrelated to the specific DataFrame contents
         3. When in doubt or if the query is ambiguous, classify as GENERAL_CONVERSATION
         
+        IMPORTANT: Apply semantic understanding to handle variations in how users might refer to columns:
+        - Singular vs. plural differences (e.g., "employee" vs "employees")
+        - Case insensitivity (e.g., "Sales" vs "sales")
+        - Common synonyms (e.g., "department" vs "dept")
+        - Common spelling variations or typos
+
         Examples:
         - "What is machine learning?" → GENERAL_CONVERSATION
         - "What's the average salary?" → DATA_ANALYSIS
         - "Tell me about natural language processing" → GENERAL_CONVERSATION
         - "How many employees are in the IT department?" → DATA_ANALYSIS
+        - "How many people work in sale?" → DATA_ANALYSIS (if "sales" is a column)
+        - "List all the worker in the marketin department" → DATA_ANALYSIS (if "marketing" and "employees" are columns)
         
         Respond with ONLY one of these exact strings: "DATA_ANALYSIS" or "GENERAL_CONVERSATION"
         """
@@ -76,14 +89,12 @@ async def classify_query_type(question: str, conversation_manager=None):
         # Make sure we get one of the expected responses
         if query_type not in ["DATA_ANALYSIS", "GENERAL_CONVERSATION"]:
             logger.warning(f"Unexpected query type classification: {query_type}")
-            # Default to GENERAL_CONVERSATION if unclear
             return "GENERAL_CONVERSATION"
             
         return query_type
         
     except Exception as e:
         logger.error(f"Error in query classification: {str(e)}")
-        # Default to GENERAL_CONVERSATION on error
         return "GENERAL_CONVERSATION"
 
 async def handle_general_conversation(question: str, conversation_manager=None):

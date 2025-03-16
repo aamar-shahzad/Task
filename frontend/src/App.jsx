@@ -27,8 +27,15 @@ function App() {
   }, [messages, sessionId]);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesEndRef.current) {
+      try {
+        messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      } catch (error) {
+        console.error('Error scrolling to bottom:', error);
+      }
+    }
   };
+  
 
   const initializeSession = async () => {
     setIsLoadingHistory(true);
@@ -86,32 +93,9 @@ function App() {
       const data = await response.json();
       const mergedHistory = [...(data.history || [])];
       setChatHistory(mergedHistory);
-
-      if (sessionId && !mergedHistory.some(chat => chat.sessionId === sessionId)) {
-        const localMessages = JSON.parse(localStorage.getItem(`chat_${sessionId}`) || '[]');
-        if (localMessages.length > 0) {
-          const localSession = {
-            sessionId,
-            messages: localMessages,
-            createdAt: localMessages[0]?.timestamp || new Date().toISOString()
-          };
-          setChatHistory(prev => [...prev, localSession]);
-        }
-      }
     } catch (error) {
-      console.error('Error loading chat history:', error);
-      const localSessions = Object.keys(localStorage)
-        .filter(key => key.startsWith('chat_'))
-        .map(key => {
-          const sessionId = key.replace('chat_', '');
-          const messages = JSON.parse(localStorage.getItem(key) || '[]');
-          return {
-            sessionId,
-            messages,
-            createdAt: messages[0]?.timestamp || new Date().toISOString()
-          };
-        });
-      setChatHistory(localSessions);
+      console?.log('Error loading chat history:', error);
+     
     }
   };
 

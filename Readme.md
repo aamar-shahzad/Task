@@ -2,7 +2,7 @@
 
 A brief description of what this project does and who it's for.
 
-This project is a Task Manager Pro with a frontend built in ReactJS and a backend using Python with FastAPI. It uses Gemini as the language model and does not utilize any vector databases. The backend has endpoints to support the frontend and uses fake employee data from an Excel sheet to answer user questions. The system handles two categories of questions: general-purpose questions and specific-purpose questions, such as performing arithmetic operations on the data source for correct answers.
+This project is a Task Manager with a frontend built in ReactJS and a backend using Python with FastAPI. It uses Gemini as the language model and does not utilize any vector databases. The backend has endpoints to support the frontend and uses fake employee data from an Excel sheet to answer user questions. The system handles two categories of questions: general-purpose questions and specific-purpose questions, such as performing arithmetic operations on the data source for correct answers.
 
 ## Installation
 
@@ -72,7 +72,7 @@ npm run start
 cd backend
 
 # Create a Python virtual environment
-python -m venv venv
+python3 -m venv venv
 
 # Activate the virtual environment
 # On Windows
@@ -91,6 +91,59 @@ cp .env.example .env
 # Start the backend server
 uvicorn app.main:app --host 0.0.0.0 --port 3001
 ```
+
+## Running Tests
+
+### Backend
+
+To run tests for the backend, the project uses `pytest`. Follow these steps to run the tests:
+
+1. **Navigate to the backend directory**:
+   ```bash
+   cd backend
+   ```
+
+2. **Ensure that the virtual environment is activated** (if it's not already):
+   ```bash
+   # On Windows
+   venv\Scripts\activate
+   # On Unix or MacOS
+   source venv/bin/activate
+   ```
+
+3. **Run the tests using pytest**:
+   ```bash
+   pytest
+   ```
+
+   This will run all the test cases in the `tests/` folder. You can also specify a particular test file or directory to run:
+   ```bash
+   pytest tests/test_api.py  # Run tests in a specific file
+   ```
+
+   To see more detailed output, use the `-v` (verbose) flag:
+   ```bash
+   pytest -v
+   ```
+
+### Frontend
+
+To run tests for the frontend, the project uses the React testing framework, which is built on top of `Jest`. Follow these steps to run the tests:
+
+1. **Navigate to the frontend directory**:
+   ```bash
+   cd frontend
+   ```
+
+2. **Run the tests using npm**:
+   ```bash
+   npm test
+   ```
+
+   This will run all the tests for the React application and provide a test summary. You can also run the tests in watch mode:
+   ```bash
+   npm test -- --watch
+   ```
 
 ## Deployment
 
@@ -133,10 +186,9 @@ Example `.env` file in the `backend` directory:
 
 ```env
 PORT=3001
-GEMINI_API_KEY=your-api-key
+
 ```
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-

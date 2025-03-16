@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks,Request
+from fastapi.responses import JSONResponse
 import logging
 import os
 from datetime import datetime, timedelta
@@ -38,6 +39,9 @@ async def root():
         "message": "Excel Query API (with Gemini) is running!",
         "timestamp": datetime.now().isoformat()
     }
+@router.options("/")
+async def options(request: Request):
+    return JSONResponse(content="",status_code=200)
 
 # Initialize a session
 @router.post("/sessions/init", response_model=SessionInit)
